@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OverTune - Music Lessons Marketplace</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+          <a class="navbar-brand" href="#" @click="currentView = 'lessons'">
+            <i class="fas fa-music me-2"></i>OverTune
+          </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="#" @click="currentView = 'lessons'">
+                  <i class="fas fa-home me-1"></i>Lessons
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link position-relative"
+                  href="#"
+                  @click="showCart = true"
+                >
+                  <i class="fas fa-shopping-cart me-1"></i>Cart
+                  <span
+                    v-if="cart.length > 0"
+                    class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+                  >
+                    {{ cart.length }}
+                  </span>
+                </a>
+              </li>
+              <li class="nav-item" v-if="!isAuthenticated">
+                <a class="nav-link" href="#" @click="currentView = 'signin'">
+                  <i class="fas fa-sign-in-alt me-1"></i>Sign In
+                </a>
+              </li>
+              <li class="nav-item" v-if="!isAuthenticated">
+                <a class="nav-link" href="#" @click="currentView = 'register'">
+                  <i class="fas fa-user-plus me-1"></i>Sign Up
+                </a>
+              </li>
+              <li class="nav-item dropdown" v-if="isAuthenticated">
+                <a
+                  class="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="fas fa-user me-1"></i>{{ user.name }}
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      @click="currentView = 'orders'"
+                    >
+                      <i class="fas fa-list me-2"></i>My Orders
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <a class="dropdown-item" href="#" @click="logout">
+                      <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main>
+        <!-- Lessons View -->
+        <div v-if="currentView === 'lessons'" class="lessons-view">
+          <!-- Hero Section -->
+          <div class="hero-section">
+            <div class="container">
+              <div class="hero-content text-center">
+                <h1 class="display-3 fw-bold mb-3">
+                  Find Your Perfect Music Lesson
+                </h1>
+                <p class="lead mb-4">
+                  Learn from the best instructors, online or in-person
+                </p>
+
+                <!-- Search Bar -->
+                <div class="search-container mx-auto">
+                  <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-white border-end-0">
+                      <i class="fas fa-search text-primary"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control border-start-0 ps-0"
+                      placeholder="Search for piano, guitar, online lessons..."
+                      v-model="searchQuery"
+                      @input="debounceSearch"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters and Sort -->
+          <div class="container my-4">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <div class="d-flex flex-wrap gap-2">
+                  <button
+                    class="btn btn-outline-primary"
+                    :class="{ active: locationFilter === '' }"
+                    @click="locationFilter = ''"
+                  >
+                    All Locations
+                  </button>
+                  <button
+                    class="btn btn-outline-primary"
+                    :class="{ active: locationFilter === 'Online' }"
+                    @click="locationFilter = 'Online'"
+                  >
+                    <i class="fas fa-laptop me-1"></i>Online
+                  </button>
+                  <button
+                    class="btn btn-outline-primary"
+                    :class="{ active: locationFilter === 'In-Person' }"
+                    @click="locationFilter = 'In-Person'"
+                  >
+                    <i class="fas fa-map-marker-alt me-1"></i>In-Person
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4 mt-3 mt-md-0">
+                <select
+                  class="form-select"
+                  v-model="sortBy"
+                  @change="sortLessons"
+                >
+                  <option value="">Sort by...</option>
+                  <option value="subject">Subject (A-Z)</option>
+                  <option value="price-asc">Price (Low to High)</option>
+                  <option value="price-desc">Price (High to Low)</option>
+                  <option value="spaces">Spaces Available</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lessons Grid -->
+          <div class="container mb-5">
+            <div v-if="isLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+
+            <div
+              v-else-if="filteredLessons.length === 0"
+              class="text-center py-5"
+            >
+              <i class="fas fa-search fa-3x text-muted mb-3"></i>
+              <h3>No lessons found</h3>
+              <p class="text-muted">Try adjusting your search or filters</p>
+            </div>
+
+            <div v-else class="row g-4">
+              <!-- Loop through each lesson and render card inline with Vue directives -->
+              <div
+                v-for="lesson in filteredLessons"
+                :key="lesson._id"
+                class="col-md-6 col-lg-4"
+              >
+                <!-- Lesson Card (rendered inline without component) -->
+                <div class="card lesson-card">
+                  <!-- Lesson Image -->
+                  <img
+                    :src="lesson.imageUrl"
+                    :alt="lesson.subject"
+                    class="lesson-card-img"
+                  />
+
+                  <div class="lesson-card-body">
+                    <!-- Lesson Subject with Dynamic Icon -->
+                    <h5 class="lesson-subject">
+                      <i
+                        :class="getInstrumentIcon(lesson.subject)"
+                        class="me-2"
+                      ></i>
+                      {{ lesson.subject }}
+                    </h5>
+
+                    <!-- Lesson Location -->
+                    <p class="lesson-location">
+                      <i class="fas fa-map-marker-alt me-1"></i>{{
+                      lesson.location }}
+                    </p>
+
+                    <!-- Lesson Description -->
+                    <p class="lesson-description">{{ lesson.description }}</p>
+
+                    <!-- Lesson Footer: Price, Spaces, and Add Button -->
+                    <div class="lesson-footer">
+                      <div>
+                        <!-- Lesson Price -->
+                        <div class="lesson-price">
+                          £{{ lesson.price.toFixed(2) }}
+                        </div>
+
+                        <!-- Available Spaces with conditional text -->
+                        <div class="lesson-spaces">
+                          <i class="fas fa-users me-1"></i>
+                          {{ lesson.spaces }} {{ lesson.spaces === 1 ? 'space' :
+                          'spaces' }} left
+                        </div>
+                      </div>
+
+                      <!-- Add to Cart Button - disabled when no spaces available -->
+                      <button
+                        class="btn btn-add-cart"
+                        @click="addToCart(lesson)"
+                        :disabled="lesson.spaces === 0"
+                      >
+                        <i class="fas fa-cart-plus me-1"></i>
+                        <!-- Conditional button text based on availability -->
+                        <span v-if="lesson.spaces === 0">Sold Out</span>
+                        <span v-else>Add</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sign In View -->
+        <div v-if="currentView === 'signin'" class="auth-view">
+          <div class="auth-hero">
+            <div class="auth-overlay"></div>
+            <div class="container">
+              <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                  <div class="auth-card">
+                    <div class="text-center mb-4">
+                      <i class="fas fa-music fa-3x text-primary mb-3"></i>
+                      <h2 class="fw-bold">Welcome Back</h2>
+                      <p class="text-muted">
+                        Sign in to continue your musical journey
+                      </p>
+                    </div>
+
+                    <form @submit.prevent="login">
+                      <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-envelope"></i>
+                          </span>
+                          <input
+                            type="email"
+                            class="form-control"
+                            v-model="loginForm.email"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                          </span>
+                          <input
+                            type="password"
+                            class="form-control"
+                            v-model="loginForm.password"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div v-if="authError" class="alert alert-danger">
+                        {{ authError }}
+                      </div>
+
+                      <button
+                        type="submit"
+                        class="btn btn-primary w-100 mb-3"
+                        :disabled="isAuthLoading"
+                      >
+                        <span v-if="isAuthLoading">
+                          <span
+                            class="spinner-border spinner-border-sm me-2"
+                          ></span>
+                          Signing in...
+                        </span>
+                        <span v-else>Sign In</span>
+                      </button>
+
+                      <div class="text-center">
+                        <p class="mb-0">
+                          Don't have an account?
+                          <a
+                            href="#"
+                            @click.prevent="currentView = 'register'"
+                            class="text-primary fw-bold"
+                            >Sign Up</a
+                          >
+                        </p>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Register View -->
+        <div v-if="currentView === 'register'" class="auth-view">
+          <div class="auth-hero">
+            <div class="auth-overlay"></div>
+            <div class="container">
+              <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                  <div class="auth-card">
+                    <div class="text-center mb-4">
+                      <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                      <h2 class="fw-bold">Join OverTune</h2>
+                      <p class="text-muted">Start your musical journey today</p>
+                    </div>
+
+                    <form @submit.prevent="register">
+                      <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                          </span>
+                          <input
+                            type="text"
+                            class="form-control"
+                            v-model="registerForm.name"
+                            pattern="[A-Za-z\s]+"
+                            title="Letters and spaces only"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-envelope"></i>
+                          </span>
+                          <input
+                            type="email"
+                            class="form-control"
+                            v-model="registerForm.email"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-phone"></i>
+                          </span>
+                          <input
+                            type="tel"
+                            class="form-control"
+                            v-model="registerForm.phone"
+                            pattern="[0-9]+"
+                            title="Numbers only"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group">
+                          <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                          </span>
+                          <input
+                            type="password"
+                            class="form-control"
+                            v-model="registerForm.password"
+                            minlength="6"
+                            required
+                          />
+                        </div>
+                        <small class="text-muted">At least 6 characters</small>
+                      </div>
+
+                      <div v-if="authError" class="alert alert-danger">
+                        {{ authError }}
+                      </div>
+
+                      <button
+                        type="submit"
+                        class="btn btn-primary w-100 mb-3"
+                        :disabled="isAuthLoading"
+                      >
+                        <span v-if="isAuthLoading">
+                          <span
+                            class="spinner-border spinner-border-sm me-2"
+                          ></span>
+                          Creating account...
+                        </span>
+                        <span v-else>Create Account</span>
+                      </button>
+
+                      <div class="text-center">
+                        <p class="mb-0">
+                          Already have an account?
+                          <a
+                            href="#"
+                            @click.prevent="currentView = 'signin'"
+                            class="text-primary fw-bold"
+                            >Sign In</a
+                          >
+                        </p>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Orders View -->
+        <div v-if="currentView === 'orders'" class="container my-5">
+          <h2 class="mb-4"><i class="fas fa-list me-2"></i>My Orders</h2>
+
+          <div v-if="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div v-else-if="orders.length === 0" class="text-center py-5">
+            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+            <h3>No orders yet</h3>
+            <p class="text-muted">
+              Start browsing lessons to make your first booking!
+            </p>
+            <button class="btn btn-primary" @click="currentView = 'lessons'">
+              Browse Lessons
+            </button>
+          </div>
+
+          <div v-else>
+            <div v-for="order in orders" :key="order._id" class="card mb-3">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h5 class="card-title">
+                      Order #{{ order._id.substring(0, 8) }}
+                      <span class="badge bg-success ms-2"
+                        >{{ order.status }}</span
+                      >
+                    </h5>
+                    <p class="text-muted mb-2">
+                      <i class="far fa-calendar me-2"></i>
+                      {{ formatDate(order.createdAt) }}
+                    </p>
+                    <div class="mb-2">
+                      <strong>Customer:</strong> {{ order.customerName }}
+                      <span class="ms-3"
+                        ><i class="fas fa-phone me-1"></i>{{ order.customerPhone
+                        }}</span
+                      >
+                    </div>
+                    <div>
+                      <strong>Lessons:</strong>
+                      <ul class="list-unstyled ms-3 mt-2">
+                        <li
+                          v-for="(lesson, index) in order.lessons"
+                          :key="index"
+                        >
+                          <i class="fas fa-music me-2 text-primary"></i>
+                          {{ lesson.subject }} - £{{ lesson.price }} × {{
+                          lesson.quantity }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="col-md-4 text-md-end">
+                    <h4 class="text-primary mb-0">
+                      £{{ order.totalAmount.toFixed(2) }}
+                    </h4>
+                    <p class="text-muted">Total</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Cart Modal -->
+      <div
+        class="modal fade"
+        :class="{ show: showCart, 'd-block': showCart }"
+        :style="{ display: showCart ? 'block' : 'none' }"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-shopping-cart me-2"></i>Your Cart
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="showCart = false"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div v-if="cart.length === 0" class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <h5>Your cart is empty</h5>
+                <p class="text-muted">Add some lessons to get started!</p>
+              </div>
+
+              <div v-else>
+                <div
+                  v-for="item in cart"
+                  :key="item.lesson._id"
+                  class="cart-item d-flex align-items-center mb-3 p-3 border rounded"
+                >
+                  <img
+                    :src="item.lesson.imageUrl"
+                    :alt="item.lesson.subject"
+                    class="cart-item-img me-3"
+                  />
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ item.lesson.subject }}</h6>
+                    <p class="text-muted mb-2 small">
+                      <i class="fas fa-map-marker-alt me-1"></i>{{
+                      item.lesson.location }}
+                    </p>
+                    <div class="d-flex align-items-center">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        @click="updateQuantity(item, -1)"
+                      >
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="mx-3">{{ item.quantity }}</span>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        @click="updateQuantity(item, 1)"
+                        :disabled="item.quantity >= item.lesson.spaces"
+                      >
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <p class="mb-1 fw-bold">
+                      £{{ (item.lesson.price * item.quantity).toFixed(2) }}
+                    </p>
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      @click="removeFromCart(item)"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <hr />
+
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h5 class="mb-0">Total:</h5>
+                  <h4 class="text-primary mb-0">£{{ cartTotal.toFixed(2) }}</h4>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer" v-if="cart.length > 0">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="showCart = false"
+              >
+                Continue Shopping
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click="proceedToCheckout"
+              >
+                <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="showCart" class="modal-backdrop fade show"></div>
+
+      <!-- Checkout Modal -->
+      <div
+        class="modal fade"
+        :class="{ show: showCheckout, 'd-block': showCheckout }"
+        :style="{ display: showCheckout ? 'block' : 'none' }"
+        tabindex="-1"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-credit-card me-2"></i>Checkout
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="showCheckout = false"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="completeOrder">
+                <div class="mb-3">
+                  <label class="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="checkoutForm.name"
+                    pattern="[A-Za-z\s]+"
+                    title="Letters and spaces only"
+                    required
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Phone Number</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    v-model="checkoutForm.phone"
+                    pattern="[0-9]+"
+                    title="Numbers only"
+                    required
+                  />
+                </div>
+
+                <div class="alert alert-info">
+                  <strong>Order Summary:</strong>
+                  <ul class="mb-0 mt-2">
+                    <li v-for="item in cart" :key="item.lesson._id">
+                      {{ item.lesson.subject }} × {{ item.quantity }} = £{{
+                      (item.lesson.price * item.quantity).toFixed(2) }}
+                    </li>
+                  </ul>
+                  <hr />
+                  <strong>Total: £{{ cartTotal.toFixed(2) }}</strong>
+                </div>
+
+                <div class="payment-methods mb-3">
+                  <p class="text-muted small mb-2">
+                    Secure payment powered by:
+                  </p>
+                  <div class="d-flex gap-2">
+                    <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                    <i class="fab fa-cc-mastercard fa-2x text-danger"></i>
+                    <i class="fab fa-cc-paypal fa-2x text-info"></i>
+                    <i class="fab fa-cc-amex fa-2x text-success"></i>
+                  </div>
+                </div>
+
+                <div v-if="checkoutError" class="alert alert-danger">
+                  {{ checkoutError }}
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-success w-100"
+                  :disabled="isCheckoutLoading"
+                >
+                  <span v-if="isCheckoutLoading">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Processing...
+                  </span>
+                  <span v-else>
+                    <i class="fas fa-check me-2"></i>Confirm Booking
+                  </span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="showCheckout" class="modal-backdrop fade show"></div>
+
+      <!-- Success Modal -->
+      <div
+        class="modal fade"
+        :class="{ show: showSuccess, 'd-block': showSuccess }"
+        :style="{ display: showSuccess ? 'block' : 'none' }"
+        tabindex="-1"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content text-center">
+            <div class="modal-body p-5">
+              <div class="success-icon mb-4">
+                <i class="fas fa-check-circle fa-5x text-success"></i>
+              </div>
+              <h3 class="mb-3">🎶 Booking Confirmed!</h3>
+              <p class="lead mb-4">
+                Your music lessons have been successfully booked.
+              </p>
+              <p class="text-muted mb-4">
+                We've sent a confirmation to your phone number.
+              </p>
+              <button class="btn btn-primary" @click="closeSuccessModal">
+                Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="showSuccess" class="modal-backdrop fade show"></div>
+    </div>
+
+    <!-- Vue.js 2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+  </body>
+</html>
