@@ -1,7 +1,8 @@
 // OverTune Vue.js 2 Application
 
-// API Base URL - Change this to your deployed backend URL
-const BASE_URL = "http://localhost:4000";
+// API Base URL - AWS Elastic Beanstalk Backend
+const BASE_URL =
+  "http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com";
 
 // Main Vue Instance
 new Vue({
