@@ -400,6 +400,17 @@ new Vue({
         minute: "2-digit",
       });
     },
+
+    formatLessonDate(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-GB", {
+        weekday: "long",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
   },
 
   mounted() {

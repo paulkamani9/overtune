@@ -212,6 +212,12 @@
                       {{ lesson.subject }}
                     </h5>
 
+                    <!-- Lesson Date -->
+                    <p v-if="lesson.date" class="lesson-date">
+                      <i class="fas fa-calendar-alt me-1"></i>
+                      {{ formatLessonDate(lesson.date) }}
+                    </p>
+
                     <!-- Lesson Location -->
                     <p class="lesson-location">
                       <i class="fas fa-map-marker-alt me-1"></i>{{
