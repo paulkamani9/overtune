@@ -21,6 +21,11 @@ new Vue({
     isDarkMode: false,
     isThemeChanging: false,
 
+    // Voice Search State
+    isListening: false,
+    voiceSearchSupported: false,
+    recognition: null,
+
     // Lessons
     lessons: [],
     searchQuery: "",
@@ -94,7 +99,78 @@ new Vue({
     async init() {
       this.loadFromLocalStorage();
       this.loadTheme();
+      this.initVoiceSearch();
       await this.fetchLessons();
+    },
+
+    // Voice Search Initialization
+    initVoiceSearch() {
+      // Check if browser supports Speech Recognition API
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        this.voiceSearchSupported = true;
+        this.recognition = new SpeechRecognition();
+
+        // Configure speech recognition
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        this.recognition.lang = "en-US";
+
+        // Handle successful speech recognition
+        this.recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          this.searchQuery = transcript;
+          this.debounceSearch();
+          this.isListening = false;
+        };
+
+        // Handle speech recognition errors
+        this.recognition.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          this.isListening = false;
+
+          if (event.error === "no-speech") {
+            alert("No speech detected. Please try again.");
+          } else if (event.error === "not-allowed") {
+            alert(
+              "Microphone access denied. Please allow microphone access to use voice search."
+            );
+          }
+        };
+
+        // Handle when recognition ends
+        this.recognition.onend = () => {
+          this.isListening = false;
+        };
+      } else {
+        this.voiceSearchSupported = false;
+      }
+    },
+
+    // Start Voice Search
+    startVoiceSearch() {
+      // Check if voice search is supported
+      if (!this.voiceSearchSupported) {
+        alert("Voice search not supported in this browser.");
+        return;
+      }
+
+      if (this.isListening) {
+        // Stop listening if already active (toggle behavior)
+        this.recognition.stop();
+        this.isListening = false;
+      } else {
+        // Start listening for voice input
+        try {
+          this.recognition.start();
+          this.isListening = true;
+        } catch (error) {
+          console.error("Error starting voice recognition:", error);
+          alert("Could not start voice search. Please try again.");
+        }
+      }
     },
 
     // Theme Management

@@ -200,6 +200,12 @@ body {
   animation: fadeInUp 0.8s ease 0.4s backwards;
 }
 
+.search-container .input-group {
+  box-shadow: 0 4px 6px -1px var(--shadow-color);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
 .search-container .input-group-text {
   border: none;
   background: var(--card-bg);
@@ -221,6 +227,72 @@ body {
 
 .search-container .form-control:focus {
   box-shadow: 0 0 0 0.25rem rgba(76, 110, 245, 0.25);
+}
+
+/* Voice Search Button */
+.voice-search-btn {
+  background: var(--card-bg);
+  border: none;
+  border-left: 1px solid var(--border-color);
+  color: var(--primary-color);
+  padding: 0.75rem 1.25rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 0 0.375rem 0.375rem 0;
+  font-size: 1.1rem;
+}
+
+.voice-search-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+.voice-search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--subtext-color);
+}
+
+.voice-search-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(76, 110, 245, 0.25);
+}
+
+/* Voice Search Listening State - Pulsing Red Glow */
+.voice-search-btn.listening {
+  background: #ef4444;
+  color: white;
+  animation: voicePulse 1.5s ease-in-out infinite;
+  border-left-color: #ef4444;
+}
+
+@keyframes voicePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+.voice-search-btn.listening i {
+  animation: microphonePulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes microphonePulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.2);
+  }
 }
 
 /* Lesson Cards */

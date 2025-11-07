@@ -103,11 +103,22 @@
                     </span>
                     <input
                       type="text"
-                      class="form-control border-start-0 ps-0"
+                      class="form-control border-start-0 border-end-0 ps-0"
                       placeholder="Search for piano, guitar, online lessons..."
                       v-model="searchQuery"
                       @input="debounceSearch"
                     />
+                    <!-- Voice Search Button -->
+                    <button
+                      class="btn voice-search-btn"
+                      :class="{ 'listening': isListening }"
+                      @click="startVoiceSearch"
+                      type="button"
+                      title="Voice Search"
+                      :disabled="!voiceSearchSupported"
+                    >
+                      <i class="fas fa-microphone"></i>
+                    </button>
                   </div>
                 </div>
               </div>
