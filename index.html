@@ -64,43 +64,6 @@
                   </span>
                 </a>
               </li>
-              <li class="nav-item" v-if="!isAuthenticated">
-                <a class="nav-link" href="#" @click="currentView = 'signin'">
-                  <i class="fas fa-sign-in-alt me-1"></i>Sign In
-                </a>
-              </li>
-              <li class="nav-item" v-if="!isAuthenticated">
-                <a class="nav-link" href="#" @click="currentView = 'register'">
-                  <i class="fas fa-user-plus me-1"></i>Sign Up
-                </a>
-              </li>
-              <li class="nav-item dropdown" v-if="isAuthenticated">
-                <a
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                >
-                  <i class="fas fa-user me-1"></i>{{ user.name }}
-                </a>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      @click="currentView = 'orders'"
-                    >
-                      <i class="fas fa-list me-2"></i>My Orders
-                    </a>
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a class="dropdown-item" href="#" @click="logout">
-                      <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </a>
-                  </li>
-                </ul>
-              </li>
               <!-- Theme Toggle Button -->
               <li class="nav-item">
                 <button
@@ -279,92 +242,11 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Sign In View -->
-        <div v-if="currentView === 'signin'" class="auth-view">
-          <div class="auth-hero">
-            <div class="auth-overlay"></div>
-            <div class="container">
-              <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-5">
-                  <div class="auth-card">
-                    <div class="text-center mb-4">
-                      <i class="fas fa-music fa-3x text-primary mb-3"></i>
-                      <h2 class="fw-bold">Welcome Back</h2>
-                      <p class="text-muted">
-                        Sign in to continue your musical journey
-                      </p>
                     </div>
-
-                    <form @submit.prevent="login">
-                      <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <div class="input-group">
-                          <span class="input-group-text">
-                            <i class="fas fa-envelope"></i>
-                          </span>
-                          <input
-                            type="email"
-                            class="form-control"
-                            v-model="loginForm.email"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <div class="input-group">
-                          <span class="input-group-text">
-                            <i class="fas fa-lock"></i>
-                          </span>
-                          <input
-                            type="password"
-                            class="form-control"
-                            v-model="loginForm.password"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div v-if="authError" class="alert alert-danger">
-                        {{ authError }}
-                      </div>
-
-                      <button
-                        type="submit"
-                        class="btn btn-primary w-100 mb-3"
-                        :disabled="isAuthLoading"
-                      >
-                        <span v-if="isAuthLoading">
-                          <span
-                            class="spinner-border spinner-border-sm me-2"
-                          ></span>
-                          Signing in...
-                        </span>
-                        <span v-else>Sign In</span>
-                      </button>
-
-                      <div class="text-center">
-                        <p class="mb-0">
-                          Don't have an account?
-                          <a
-                            href="#"
-                            @click.prevent="currentView = 'register'"
-                            class="text-primary fw-bold"
-                            >Sign Up</a
-                          >
-                        </p>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+      </main>
+
+      <!-- Cart Modal -->
 
         <!-- Register View -->
         <div v-if="currentView === 'register'" class="auth-view">

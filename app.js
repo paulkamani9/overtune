@@ -15,16 +15,11 @@ new Vue({
 
     // Loading States
     isLoading: false,
-    isAuthLoading: false,
     isCheckoutLoading: false,
 
     // Theme State
     isDarkMode: false,
     isThemeChanging: false,
-
-    // User & Auth
-    user: null,
-    token: null,
 
     // Lessons
     lessons: [],
@@ -36,35 +31,17 @@ new Vue({
     // Cart
     cart: [],
 
-    // Orders
-    orders: [],
-
     // Forms
-    loginForm: {
-      email: "",
-      password: "",
-    },
-    registerForm: {
-      name: "",
-      email: "",
-      phone: "",
-      password: "",
-    },
     checkoutForm: {
       name: "",
       phone: "",
     },
 
     // Errors
-    authError: "",
     checkoutError: "",
   },
 
   computed: {
-    isAuthenticated() {
-      return this.token !== null;
-    },
-
     filteredLessons() {
       let filtered = this.lessons;
 
@@ -118,10 +95,6 @@ new Vue({
       this.loadFromLocalStorage();
       this.loadTheme();
       await this.fetchLessons();
-
-      if (this.isAuthenticated) {
-        await this.fetchOrders();
-      }
     },
 
     // Theme Management
@@ -162,28 +135,11 @@ new Vue({
 
     // Local Storage
     loadFromLocalStorage() {
-      const token = localStorage.getItem("token");
-      const user = localStorage.getItem("user");
       const cart = localStorage.getItem("cart");
-
-      if (token) this.token = token;
-      if (user) this.user = JSON.parse(user);
       if (cart) this.cart = JSON.parse(cart);
     },
 
     saveToLocalStorage() {
-      if (this.token) {
-        localStorage.setItem("token", this.token);
-      } else {
-        localStorage.removeItem("token");
-      }
-
-      if (this.user) {
-        localStorage.setItem("user", JSON.stringify(this.user));
-      } else {
-        localStorage.removeItem("user");
-      }
-
       localStorage.setItem("cart", JSON.stringify(this.cart));
     },
 
@@ -257,104 +213,6 @@ new Vue({
       this.lessons = sorted;
     },
 
-    async login() {
-      this.authError = "";
-      this.isAuthLoading = true;
-
-      try {
-        const response = await fetch(`${BASE_URL}/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(this.loginForm),
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          this.token = data.token;
-          this.user = data.user;
-          this.saveToLocalStorage();
-          this.currentView = "lessons";
-          this.loginForm = { email: "", password: "" };
-          await this.fetchOrders();
-        } else {
-          this.authError = data.message || "Login failed. Please try again.";
-        }
-      } catch (error) {
-        console.error("Login error:", error);
-        this.authError = "Unable to connect to server. Please try again.";
-      } finally {
-        this.isAuthLoading = false;
-      }
-    },
-
-    async register() {
-      this.authError = "";
-      this.isAuthLoading = true;
-
-      try {
-        const response = await fetch(`${BASE_URL}/auth/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(this.registerForm),
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-          this.token = data.token;
-          this.user = data.user;
-          this.saveToLocalStorage();
-          this.currentView = "lessons";
-          this.registerForm = { name: "", email: "", phone: "", password: "" };
-          await this.fetchOrders();
-        } else {
-          this.authError =
-            data.message || "Registration failed. Please try again.";
-        }
-      } catch (error) {
-        console.error("Registration error:", error);
-        this.authError = "Unable to connect to server. Please try again.";
-      } finally {
-        this.isAuthLoading = false;
-      }
-    },
-
-    logout() {
-      this.token = null;
-      this.user = null;
-      this.orders = [];
-      this.saveToLocalStorage();
-      this.currentView = "lessons";
-    },
-
-    async fetchOrders() {
-      if (!this.token) return;
-
-      this.isLoading = true;
-      try {
-        const response = await fetch(`${BASE_URL}/orders`, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          this.orders = data.data;
-        }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
     // Cart Management
     addToCart(lesson) {
       const existingItem = this.cart.find(
@@ -396,12 +254,6 @@ new Vue({
     },
 
     proceedToCheckout() {
-      // Pre-fill form if user is logged in
-      if (this.user) {
-        this.checkoutForm.name = this.user.name;
-        this.checkoutForm.phone = this.user.phone;
-      }
-
       this.showCart = false;
       this.showCheckout = true;
     },
@@ -424,7 +276,6 @@ new Vue({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(this.token && { Authorization: `Bearer ${this.token}` }),
           },
           body: JSON.stringify(orderData),
         });
@@ -442,11 +293,6 @@ new Vue({
 
           // Refresh lessons to update spaces
           await this.fetchLessons();
-
-          // Refresh orders if authenticated
-          if (this.isAuthenticated) {
-            await this.fetchOrders();
-          }
 
           // Reset form
           this.checkoutForm = { name: "", phone: "" };
