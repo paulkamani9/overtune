@@ -18,6 +18,10 @@ new Vue({
     isAuthLoading: false,
     isCheckoutLoading: false,
 
+    // Theme State
+    isDarkMode: false,
+    isThemeChanging: false,
+
     // User & Auth
     user: null,
     token: null,
@@ -112,11 +116,48 @@ new Vue({
     // Initialize App
     async init() {
       this.loadFromLocalStorage();
+      this.loadTheme();
       await this.fetchLessons();
 
       if (this.isAuthenticated) {
         await this.fetchOrders();
       }
+    },
+
+    // Theme Management
+    loadTheme() {
+      // Load theme preference from localStorage
+      const savedTheme = localStorage.getItem("theme");
+      this.isDarkMode = savedTheme === "dark";
+      this.applyTheme();
+    },
+
+    applyTheme() {
+      // Apply theme to document root element
+      if (this.isDarkMode) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+    },
+
+    toggleTheme() {
+      // Trigger spinning animation
+      this.isThemeChanging = true;
+
+      // Toggle theme after a short delay for animation effect
+      setTimeout(() => {
+        this.isDarkMode = !this.isDarkMode;
+        this.applyTheme();
+
+        // Save preference to localStorage
+        localStorage.setItem("theme", this.isDarkMode ? "dark" : "light");
+
+        // Remove spinning class after animation completes
+        setTimeout(() => {
+          this.isThemeChanging = false;
+        }, 800);
+      }, 100);
     },
 
     // Local Storage

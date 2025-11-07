@@ -101,6 +101,17 @@
                   </li>
                 </ul>
               </li>
+              <!-- Theme Toggle Button -->
+              <li class="nav-item">
+                <button
+                  class="theme-toggle"
+                  @click="toggleTheme"
+                  :class="{ spinning: isThemeChanging }"
+                  title="Toggle Theme"
+                >
+                  <i class="fas fa-record-vinyl vinyl-icon"></i>
+                </button>
+              </li>
             </ul>
           </div>
         </div>
