@@ -1,10 +1,10 @@
 # Frontend – Overtune (Vue.js)
 
 **Hosted URL (GitHub Pages):**  
-_[Insert your GitHub Pages link here]_
+https://paulkamani.github.io/overtune-frontend/
 
 **GitHub Repository:**  
-_[Insert your frontend repo link here]_
+https://github.com/paulkamani9/overtune
 
 ---
 
@@ -216,26 +216,6 @@ The application supports dark/light themes with CSS custom properties. To custom
 - **Success/error modals** for user feedback
 - **Vinyl record icon** animation for theme toggle
 - **Voice search pulse** animation when listening
-
----
-
-## 🧪 Testing Checklist
-
-- [ ] Browse all lessons successfully
-- [ ] Search functionality returns correct results
-- [ ] Voice search (if browser supports)
-- [ ] Filter by location (Online/In-Person)
-- [ ] Sort lessons by different criteria
-- [ ] Add lessons to cart
-- [ ] Update cart quantities
-- [ ] Remove items from cart
-- [ ] Cart persists after page refresh
-- [ ] Checkout form validation works
-- [ ] Complete order successfully
-- [ ] Success confirmation displays
-- [ ] Lesson spaces update after booking
-- [ ] Dark/Light theme toggle works
-- [ ] Responsive design on mobile devices
 
 ---
 
