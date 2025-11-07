@@ -1,7 +1,7 @@
 # Frontend – Overtune (Vue.js)
 
 **Hosted URL (GitHub Pages):**  
-https://paulkamani.github.io/overtune-frontend/
+https://paulkamani9.github.io/overtune/
 
 **GitHub Repository:**  
 https://github.com/paulkamani9/overtune
