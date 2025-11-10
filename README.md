@@ -29,16 +29,18 @@ This application provides an intuitive interface for exploring various music les
 - **JavaScript (ES6)** – Modern JavaScript with async/await patterns
 - **Font Awesome 6.5.1** – Icon library for UI enhancements
 - **GitHub Pages** – Static site hosting
-- **AWS Elastic Beanstalk** – Backend integration for API calls
+- **Render.com** – Production backend API hosting (HTTPS)
+- **AWS Elastic Beanstalk** – Development backend API hosting
 - **MongoDB Atlas** – Cloud database for lesson and order data
 
 ---
 
 ## 🌐 API Endpoints
 
-All API endpoints are fetched from the AWS backend using native `fetch()` API with Promises (no Axios):
+All API endpoints are fetched using native `fetch()` API with Promises (no Axios). The application automatically switches between backend environments:
 
-**Base URL:** `http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com`
+**Production (GitHub Pages):** `https://overtune-backend.onrender.com`  
+**Development (Local):** `http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com`
 
 ### Endpoints:
 
@@ -46,6 +48,11 @@ All API endpoints are fetched from the AWS backend using native `fetch()` API wi
 - **GET /search?q={query}** – Search lessons by keyword
 - **POST /orders** – Create a new order/booking
 - **PUT /lessons/:id** – Update lesson availability (spaces)
+
+### Backend Hosting:
+
+- **Render.com** – Production backend with HTTPS support (required for GitHub Pages)
+- **AWS Elastic Beanstalk** – Development backend for local testing
 
 ---
 
@@ -154,12 +161,22 @@ overtune/
 
 ## 🎨 Customization
 
-### Changing the Backend URL
+### Environment Configuration
 
-To point to a different backend server, update the `BASE_URL` constant in `app.js`:
+The application automatically detects the environment and uses the appropriate backend:
+
+- **Production (GitHub Pages)**: Uses Render backend with HTTPS
+- **Local Development**: Uses AWS Elastic Beanstalk backend
+
+To manually change backend URLs, update the configuration in `app.js`:
 
 ```javascript
-const BASE_URL = "http://your-backend-url.com";
+const isProduction =
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1";
+const BASE_URL = isProduction
+  ? "https://overtune-backend.onrender.com" // Production
+  : "http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com"; // Development
 ```
 
 ### Theme Customization
@@ -226,9 +243,12 @@ The application supports dark/light themes with CSS custom properties. To custom
 If lessons are not loading:
 
 1. Check browser console for errors
-2. Verify the AWS backend URL is accessible
+2. Verify the backend URL is accessible:
+   - **Production**: https://overtune-backend.onrender.com/lessons
+   - **Development**: http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com/lessons
 3. Ensure CORS is enabled on the backend
 4. Check your internet connection
+5. Note: Render free tier may have cold starts (first load might be slow)
 
 ### Voice Search Not Working
 

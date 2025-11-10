@@ -1,8 +1,14 @@
 // OverTune Vue.js 2 Application
 
-// API Base URL - AWS Elastic Beanstalk Backend
-const BASE_URL =
-  "http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com";
+// API Base URL Configuration
+// Use Render (HTTPS) for production (GitHub Pages)
+// Use AWS Elastic Beanstalk for local development
+const isProduction =
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1";
+const BASE_URL = isProduction
+  ? "https://overtune-backend.onrender.com" // Production: Render (HTTPS for GitHub Pages)
+  : "http://overtune-env.eba-tx7disv7.us-east-1.elasticbeanstalk.com"; // Development: AWS
 
 // Main Vue Instance
 new Vue({
